@@ -1,6 +1,6 @@
 scheduler:
   target: diffusers.LCMScheduler
-  num_inference_timesteps: 4
+  num_inference_timesteps: 2
   params:
     num_train_timesteps: 1000
     beta_start: 0.00085

@@ -1,0 +1,48 @@
+{
+    "V": {
+        "0": {
+            "role": "V",
+            "spans": [
+                2
+            ],
+            "words": [
+                "kicks"
+            ]
+        }
+    },
+    "entities": {
+        "0": {
+            "role": "ARG0",
+            "spans": [
+                0,
+                1
+            ],
+            "words": [
+                "a",
+                "person"
+            ]
+        },
+        "1": {
+            "role": "ARGM-DIR",
+            "spans": [
+                3
+            ],
+            "words": [
+                "forward."
+            ]
+        }
+    },
+    "relations": [
+        [
+            0,
+            0,
+            "ARG0"
+        ],
+        [
+            0,
+            1,
+            "ARGM-DIR"
+        ]
+    ],
+    "caption": "a person kicks."
+}

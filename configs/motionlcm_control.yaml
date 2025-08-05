@@ -1,11 +1,6 @@
-FOLDER: './experiments_motionlcm_keypose_traj_2d_finals_data_aug2'
-TEST_FOLDER: './experiments_motionlcm_keypose_traj_2d_finals_data_aug2'
+FOLDER: './experiments_motionlcm_keypose_traj_2d_finals'
+TEST_FOLDER: './experiments_motionlcm_keypose_traj_2d_finals'
 
-# FOLDER: './experiments_motionlcm_keypose_traj_2d_directly'
-# TEST_FOLDER: './experiments_motionlcm_keypose_traj_2d_directly'
-
-# FOLDER: './experiments_lifting'
-# TEST_FOLDER: './experiments_lifting'
 
 NAME: 'motionlcm_humanml'
 
@@ -49,7 +44,7 @@ TEST:
   SPLIT: 'test'
   NUM_WORKERS: 12
 
-  CHECKPOINTS: ./experiments_motionlcm_keypose_traj_2d_wo_traj_loss/motionlcm_humanml/2024-12-03T02-17-19/checkpoints/checkpoint-99.ckpt #best!
+  CHECKPOINTS: ./experiments_motionlcm_keypose_traj_2d_wo_traj_loss/motionlcm_humanml/2024-12-03T02-17-19/checkpoints/best.ckpt #best!
   # Testing Args
   REPLICATION_TIMES: 1
   MM_NUM_SAMPLES: 100
@@ -83,7 +78,6 @@ model:
   # ControlNet Args
   is_controlnet: true
   is_controlnet_temporal: false
-  # training_control_joint: [0, 10, 11, 15, 20, 21]
   training_control_joint: [0, 1, 2, 3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
   testing_control_joint: [0, 10, 11, 15, 20, 21]
   training_density: 'random'

@@ -152,54 +152,6 @@ def rotate_pose(motion_3d, angle_x=20, angle_y=45):
         
     return motion_3d_rotated,R
 
-def rotate_pose_around_x(pose, angle_degrees=90):
-    """
-    将3D姿态围绕X轴旋转指定的角度。
-    
-    参数:
-    - pose: numpy.ndarray, 形状为 [len, 22, 3] 的3D姿态数据。
-    - angle_degrees: 旋转角度，以度为单位，默认为90度。
-    
-    返回:
-    - rotated_pose: 旋转后的3D姿态数据。
-    """
-    # 计算旋转矩阵
-    angle_radians = np.radians(angle_degrees)
-    cos_angle = np.cos(angle_radians)
-    sin_angle = np.sin(angle_radians)
-    rotation_matrix = np.array([[1, 0, 0],
-                                [0, cos_angle, -sin_angle],
-                                [0, sin_angle, cos_angle]])
-    
-    # 应用旋转矩阵
-    rotated_pose = np.dot(pose, rotation_matrix.T)
-    
-    return rotated_pose
-
-def rotate_pose_around_y(pose, angle_degrees=90):
-    """
-    将3D姿态围绕Y轴旋转指定的角度。
-    
-    参数:
-    - pose: numpy.ndarray, 形状为 [len, 22, 3] 的3D姿态数据。
-    - angle_degrees: 旋转角度，以度为单位，默认为90度。
-    
-    返回:
-    - rotated_pose: 旋转后的3D姿态数据。
-    """
-    # 计算旋转矩阵
-    angle_radians = np.radians(angle_degrees)
-    cos_angle = np.cos(angle_radians)
-    sin_angle = np.sin(angle_radians)
-    rotation_matrix = np.array([[cos_angle, 0, sin_angle],
-                                [0, 1, 0],
-                                [-sin_angle, 0, cos_angle]])
-    
-    # 应用旋转矩阵
-    rotated_pose = np.dot(pose, rotation_matrix.T)
-    
-    return rotated_pose
-
 
 class Text2MotionDatasetV2_Proj2d(data.Dataset):
 
@@ -405,12 +357,11 @@ class Text2MotionDatasetV2_Proj2d(data.Dataset):
         return joints,mask_seq
 
     def random_mask_train_multi_joint(self, joints: np.ndarray, n_joints: int = 22) -> np.ndarray:
-        # 随机选择 1-3 个关节
         if self.t_ctrl:
             choose_joint = self.training_control_joint
         else:
             num_joints = len(self.training_control_joint)
-            num_joints_control = np.random.randint(1, num_joints + 1)  # 随机选择 1-3 个关节
+            num_joints_control = np.random.randint(1, num_joints + 1)  
             choose_joint = np.random.choice(num_joints, num_joints_control, replace=False)
             choose_joint = self.training_control_joint[choose_joint]
 
@@ -521,8 +472,7 @@ class Text2MotionDatasetV2_Proj2d(data.Dataset):
             angle_x = np.random.uniform(15, 30)  # ±15°
             angle_y = np.random.uniform(30, 45)
 
-        # data = rotate_pose_around_y(data, angle_y)
-        # data = rotate_pose_around_x(data, angle_x)
+       
         data, Rotation = rotate_pose(data,angle_x=angle_x,angle_y=angle_y )
 
 
@@ -1061,14 +1011,11 @@ class Text2MotionDatasetKeyPoseTrejControl(data.Dataset):
         self.id_list = id_list
 
         if "test" in split_file:
-            graph = load_json("/home/lei/MotionLCM2/datasets/humanml3d/new_test_data_with_motionidx.json")
-            # graph = load_json("/home/lei/GraphMotion/datasets/humanml3d/test_100STYLE_Full.json")
+            graph = load_json("/home/lei/Sketch2Anim/datasets/humanml3d/new_test_data_with_motionidx.json")
         if "train" in split_file:
-            graph = load_json("/home/lei/MotionLCM2/datasets/humanml3d/new_train_data_with_motionidx.json")
-            # graph = load_json("/home/lei/GraphMotion/datasets/humanml3d/train_100STYLE_Full.json")
+            graph = load_json("/home/lei/Sketch2Anim/datasets/humanml3d/new_train_data_with_motionidx.json")
         
         id_list = graph.keys()   
-        # id_list = list(id_list)[:1000]     
         self.id_list = id_list
 
         maxdata = 10 if tiny else 1e10
@@ -1095,7 +1042,7 @@ class Text2MotionDatasetKeyPoseTrejControl(data.Dataset):
             pose = np.load(pjoin(pose_dir, name + ".npy"))
             if pose.ndim != 3:
                 continue
-            # print("pose.shape",pose.shape)
+
             pose[..., 0] -= pose[:, 0:1, 0]
             pose[..., 2] -= pose[:, 0:1, 2]
 
@@ -1348,7 +1295,6 @@ class Text2MotionDatasetKeyPoseTrejControl(data.Dataset):
         T = pose.shape[0]  # 帧数
         num_frames_to_select = 1
 
-        # selected_frames = random.sample(range(T), num_frames_to_select)  # 从0到T-1中随机选择num_frames_to_select个int
         selected_frames = min(selected_frames,T-1)
         selected_frames = max(0,selected_frames)
 
@@ -1381,7 +1327,7 @@ class Text2MotionDatasetKeyPoseTrejControl(data.Dataset):
             hint
         )
 
-class Text2MotionDatasetPoseTrejControl(data.Dataset):
+class Text2MotionDatasetRandomKeyPoseTrejControl(data.Dataset):
 
     def __init__(
         self,
@@ -1644,8 +1590,7 @@ class Text2MotionDatasetPoseTrejControl(data.Dataset):
         T = pose.shape[0]  # 帧数
         num_frames_to_select = 1 
 
-        selected_frames = random.sample(range(T), num_frames_to_select)  # 从0到T-1中随机选择num_frames_to_select个int
-
+        selected_frames = random.sample(range(T), num_frames_to_select)  
         mask = np.zeros(T, dtype=int)
 
         mask[selected_frames] = 1

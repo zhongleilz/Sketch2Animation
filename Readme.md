@@ -32,7 +32,7 @@ If you find our code or paper helpful, please consider starring our repository a
 
 
 <!-- ## PRETRAINED_WEIGHTS
-Available on [Google Drive](https://drive.google.com/drive/folders/12m_v_vybVeAQFkH9bP8wmJIxJhGoIJL1?usp=sharing).
+Available on [Google Drive](https://drive.google.com/drive/folders/12m_v_vybVeAQFkH9bP8wmJIxJhGoIJL1?usp=sharing). -->
 
 ## Getting started
 This code requires:
@@ -54,7 +54,7 @@ For windows use [this](https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-wi
 Setup conda env:
 ```shell
 conda env create -f environment.yml
-conda activate omnicontrol
+conda activate sketch2anim
 python -m spacy download en_core_web_sm
 pip install git+https://github.com/openai/CLIP.git
 ```
@@ -79,23 +79,18 @@ then copy the result dataset to our repository:
 cp -r ../HumanML3D/HumanML3D ./dataset/HumanML3D
 ```
 
-**100STYLE** - Download the dataset from Google Drive, then copy the files in texts, new_joints, and new_joint_vecs into their corresponding directories within ./dataset/HumanML3D. We use indices larger than 030000 to represent data from the 100STYLE dataset.
 
-### 3. Download the pretrained models
+<!-- ### 3. Download the pretrained models
 
 1. Download the model(s) you wish to use, then unzip and place them in `./save/`. 
-2. Download the pretrained model from [MLD](https://github.com/ChenFengYe/motion-latent-diffusion) and then copy it to `./save/`. 
-
+2. Download the pretrained model from [MLD](https://github.com/ChenFengYe/motion-latent-diffusion) and then copy it to `./save/`.  -->
+<!-- 
 
 ## Motion Synthesis
 Please add the content text to ./demo/test.txt and the style motion to ./test_motion, then run:
 ```shell
 bash demo.sh
 ```
-
-Tips:
-1. For some motion styles, the default parameter settings may not achieve the desired results. You can modify the `guidance_scale_style` in `config_cmld_humanml3d.yaml` to achieve a better balance between content preservation and style reflection.
-2. Make sure to set `is_test: True`.
 
 ## Train your own SMooDi
 You can train your own model via
@@ -113,17 +108,13 @@ Tips:
 You can evaluate model via
 ```shell
 bash test.sh
-```
+``` -->
 
 
-Tips:
-1. In `config_cmld_humanml3d.yaml`, set `guidance_mode: v2 or v4` for evaluation.
-2. Make sure to set `is_test: True` during evaluation.
-3. In `config_cmld_humanml3d.yaml`, set `is_guidance: True` means that classifier-based style guidance will be used during evaluation. If `is_guidance: False`, evaluation will take nearly 50 minutes, whereas it will take 4 hours if `is_guidance: True` on an A5000 GPU. -->
 
 ## Acknowledgments
 
-Our code is heavily based on [MLD](https://github.com/ChenFengYe/motion-latent-diffusion).  
+Our code is heavily based on [MLD](https://github.com/ChenFengYe/motion-latent-diffusion) and [MotionLCM](https://github.com/Dai-Wenxun/MotionLCM).  
 The motion visualization is based on [MLD](https://github.com/ChenFengYe/motion-latent-diffusion) and [TMOS](https://github.com/Mathux/TEMOS). 
 We also thank the following works:
 [guided-diffusion](https://github.com/openai/guided-diffusion), [MotionCLIP](https://github.com/GuyTevet/MotionCLIP), [text-to-motion](https://github.com/EricGuo5513/text-to-motion), [actor](https://github.com/Mathux/ACTOR), [joints2smpl](https://github.com/wangsen1312/joints2smpl), [MoDi](https://github.com/sigal-raab/MoDi), [HumanML3D](https://github.com/EricGuo5513/HumanML3D), [OmniControl](https://github.com/neu-vi/OmniControl).

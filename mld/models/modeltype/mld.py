@@ -374,7 +374,7 @@ class MLD(BaseModel):
 
             lbfgs = optim.LBFGS([noise_pred],
                     history_size=10, 
-                    max_iter=4, 
+                    max_iter=8, 
                     line_search_fn="strong_wolfe")
             for _ in range(n_guide_steps):
                 lbfgs.step(closure)
