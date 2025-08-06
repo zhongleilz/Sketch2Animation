@@ -13,7 +13,7 @@ TRAIN:
   SEED_VALUE: 1234
   
 
-  PRETRAINED: ./experiments_control/motionlcm_humanml/motionlcm_22joint_combine_adapter.ckpt
+  PRETRAINED: ./save/pretrain_22joint_combine_adapter.ckpt
   
 
   validation_steps: -1
@@ -44,7 +44,7 @@ TEST:
   SPLIT: 'test'
   NUM_WORKERS: 12
 
-  CHECKPOINTS: ./experiments_motionlcm_keypose_traj_2d_wo_traj_loss/motionlcm_humanml/2024-12-03T02-17-19/checkpoints/best.ckpt #best!
+  CHECKPOINTS: ./save/checkpoints/adapter.ckpt
   # Testing Args
   REPLICATION_TIMES: 1
   MM_NUM_SAMPLES: 100

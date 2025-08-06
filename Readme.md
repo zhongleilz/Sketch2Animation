@@ -26,13 +26,13 @@ If you find our code or paper helpful, please consider starring our repository a
 
 ## TODO List
 - [x] Code for Inference and Pretrained model.
-- [x] Evaluation code and metrics.
-- [x] Code for training.
-- [x] Blender Plugin.
+- [] Evaluation code and metrics.
+- [] Code for training.
+- [] Blender Plugin.
 
 
 ## PRETRAINED_WEIGHTS
-Available on [Google Drive](https://drive.google.com/drive/folders/12m_v_vybVeAQFkH9bP8wmJIxJhGoIJL1?usp=sharing).
+ Download the pretrained model from [Google Drive](https://drive.google.com/drive/u/1/folders/13I35FWKw-HzUW87HTdBRwv5aOFrhYvEF) and then copy it to `./save/`.  
 
 ## Getting started
 This code requires:
@@ -80,17 +80,14 @@ cp -r ../HumanML3D/HumanML3D ./dataset/HumanML3D
 ```
 
 
-### 3. Download the pretrained models
-
-1. Download the pretrained model from [Google Drive](https://drive.google.com/drive/u/1/folders/13I35FWKw-HzUW87HTdBRwv5aOFrhYvEF) and then copy it to `./save/`.  
-
-## 2D Sketch Motion Synthesis
+### 3. 2D Sketch Motion Synthesis
 Please add the content text to `./demo/demo.json`, then run:
 ```shell
 bash demo.sh
 ```
 
 Example output:
+
 ![2D Motion Synthesis Example](demo/demo.gif)
 
 
