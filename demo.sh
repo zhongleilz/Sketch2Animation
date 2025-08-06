@@ -1,0 +1,1 @@
+python demo_kp_traj_2d.py --cfg configs/motionlcm_control.yaml

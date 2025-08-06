@@ -25,14 +25,14 @@ If you find our code or paper helpful, please consider starring our repository a
 ```
 
 ## TODO List
-- [] Code for Inference and Pretrained model.
-- [] Evaluation code and metrics.
-- [] Code for training.
-- [] Blender Plugin.
+- [x] Code for Inference and Pretrained model.
+- [x] Evaluation code and metrics.
+- [x] Code for training.
+- [x] Blender Plugin.
 
 
-<!-- ## PRETRAINED_WEIGHTS
-Available on [Google Drive](https://drive.google.com/drive/folders/12m_v_vybVeAQFkH9bP8wmJIxJhGoIJL1?usp=sharing). -->
+## PRETRAINED_WEIGHTS
+Available on [Google Drive](https://drive.google.com/drive/folders/12m_v_vybVeAQFkH9bP8wmJIxJhGoIJL1?usp=sharing).
 
 ## Getting started
 This code requires:
@@ -80,35 +80,18 @@ cp -r ../HumanML3D/HumanML3D ./dataset/HumanML3D
 ```
 
 
-<!-- ### 3. Download the pretrained models
+### 3. Download the pretrained models
 
-1. Download the model(s) you wish to use, then unzip and place them in `./save/`. 
-2. Download the pretrained model from [MLD](https://github.com/ChenFengYe/motion-latent-diffusion) and then copy it to `./save/`.  -->
-<!-- 
+1. Download the pretrained model from [Google Drive](https://drive.google.com/drive/u/1/folders/13I35FWKw-HzUW87HTdBRwv5aOFrhYvEF) and then copy it to `./save/`.  
 
-## Motion Synthesis
-Please add the content text to ./demo/test.txt and the style motion to ./test_motion, then run:
+## 2D Sketch Motion Synthesis
+Please add the content text to `./demo/demo.json`, then run:
 ```shell
 bash demo.sh
 ```
 
-## Train your own SMooDi
-You can train your own model via
-```shell
-bash train.sh
-```
-
-Tips:
-1. In `config_cmld_humanml3d.yaml`, set `is_recon: True` means that cycle loss will not be used during training. 
-2. In `config_cmld_humanml3d.yaml`, set `guidance_mode: v0` for training.
-3. In fact, the improvement in performance from cycle loss is quite limited. If you want to quickly train a model, you can set `is_recon: True`. With this setting, it will take nearly 50 minutes to train 50 epochs on an A5000 GPU and achieve performance nearly equivalent to the second row in Table 3 of our paper. 
-
-
-## Evaluate
-You can evaluate model via
-```shell
-bash test.sh
-``` -->
+Example output:
+![2D Motion Synthesis Example](demo/demo.gif)
 
 
 
