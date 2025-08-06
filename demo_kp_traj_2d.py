@@ -216,20 +216,28 @@ def main():
     model.load_state_dict(state_dict, strict=True)
 
     # Load normalization stats
-    mean_pose = torch.tensor(np.load('/home/lei/Sketch2Anim/datasets/humanml_spatial_norm/Mean_pos.npy')).cuda()
-    std_pose = torch.tensor(np.load('/home/lei/Sketch2Anim/datasets/humanml_spatial_norm/Std_pos.npy')).cuda()
-    raw_mean = np.load('/home/lei/Sketch2Anim/datasets/humanml_spatial_norm/Mean_raw.npy')
-    raw_std = np.load('/home/lei/Sketch2Anim/datasets/humanml_spatial_norm/Std_raw.npy')
+    mean_pose = torch.tensor(np.load('/home/lei/dataset_all/Mean_pos.npy')).cuda()
+    std_pose = torch.tensor(np.load('/home/lei/dataset_all/Std_pos.npy')).cuda()
+    raw_mean = np.load('/home/lei/MotionLCM2/datasets/humanml_spatial_norm/Mean_raw.npy')
+    raw_std = np.load('/home/lei/MotionLCM2/datasets/humanml_spatial_norm/Std_raw.npy')
 
-    joint_ids = np.array([10])  
+    joint_ids = np.array([10])  # pelvis
 
-    data_path_1 = "./demo/kick.pkl"
+    # length = 196
+    # control_full = np.zeros((1, length, 22, 3), dtype=np.float32)
+    # control_full_2d = np.zeros((1, length, 22, 3), dtype=np.float32)
+
+    data_path_1 = "./test_data/008065.pkl"
 
     with open(data_path_1, 'rb') as f:
         data_list = pickle.load(f)
 
     # Load motion
-    joints_3d = data_list["joints_3d_gt"][:35]
+    motion_path = "/home/lei/dataset_all/new_joints/008065.npy"
+    # motion_path = "./test_data_old/Chicken_FW_00_pos.npy"
+    # joints_3d = np.load(motion_path)#[40:70]
+
+    joints_3d = data_list["joints_3d_gt"][:35]#[5:18]
     motion_len = len(joints_3d)
 
 
@@ -255,6 +263,8 @@ def main():
     joints_2d_t = normalize(joints_2d_t.unsqueeze(0)).reshape(-1,22,3)
 
     # Fill in control signals
+    # control_full[0, 0:motion_len, joint_id[0], :] = joints_3d_t.cpu().numpy()[0:motion_len, joint_id[0], :]
+    # control_full_2d[0, 0:motion_len, joint_id[0], :] = joints_2d_t.cpu().numpy()[0:motion_len, joint_id[0], :]
     for joint_id in joint_ids:
         control_full[0, 0:motion_len, joint_id, :] = joints_3d_t.cpu().numpy()[0:motion_len, joint_id, :]
     
@@ -269,11 +279,12 @@ def main():
     text = [test_data["caption"]]
 
     # Re-load and re-project (for visualization consistency)
-    data_path_1 = "./demo/kick.pkl"
+    data_path_1 = "./test_data/008065.pkl"
 
     with open(data_path_1, 'rb') as f:
         data_list = pickle.load(f)
 
+    # joints_3d = np.load(motion_path)#[40:70]
     joints_3d = data_list["joints_3d_gt"][:35]#[5:18]
     joints_3d[..., 0] -= joints_3d[0:1, 0:1, 0]
     joints_3d[..., 2] -= joints_3d[0:1, 0:1, 2]
@@ -285,9 +296,8 @@ def main():
     joints_3d = normalize(joints_3d)
     joints_2d = normalize(joints_2d)
     
-    # joint idx
+    
     motion_idx = [0]
-
     T = joints_3d.shape[1]
     mask_array = np.zeros(T, dtype=int)
     mask_array[motion_idx] = 1
