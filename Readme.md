@@ -25,10 +25,10 @@ If you find our code or paper helpful, please consider starring our repository a
 ```
 
 ## TODO List
-- [] Code for Inference and Pretrained model.
-- [] Evaluation code and metrics.
-- [] Code for training.
-- [] Blender Plugin.
+- [ ] Code for inference and pretrained model (expected summer 2025).
+- [ ] Evaluation code and metrics (planned autumn 2025).
+- [ ] Code for training (expected winter 2025).
+- [ ] Blender plugin (targeting spring 2026).
 
 
 <!-- ## PRETRAINED_WEIGHTS
