@@ -26,9 +26,9 @@ If you find our code or paper helpful, please consider starring our repository a
 
 ## TODO List
 - [x] Code for Inference and Pretrained model.
+- [] Blender Plugin.
 - [] Evaluation code and metrics.
 - [] Code for training.
-- [] Blender Plugin.
 
 
 ## PRETRAINED_WEIGHTS
@@ -90,6 +90,10 @@ Example output:
 
 ![2D Motion Synthesis Example](demo/demo.gif)
 
+
+### 4. Blender Plugin
+We plan to open-source the plugin within this week.
+![plugin](assets/blender.png)
 
 
 ## Acknowledgments
