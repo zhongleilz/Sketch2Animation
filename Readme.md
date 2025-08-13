@@ -32,7 +32,7 @@ If you find our code or paper helpful, please consider starring our repository a
 
 
 ## PRETRAINED_WEIGHTS
- Download the pretrained model from [Google Drive](https://drive.google.com/drive/u/1/folders/13I35FWKw-HzUW87HTdBRwv5aOFrhYvEF) and then copy it to `./save/`.  
+ Download the pretrained model from [Google Drive](https://drive.google.com/drive/u/1/folders/13I35FWKw-HzUW87HTdBRwv5aOFrhYvEF) and then copy it to `./save/checkpoints/`.  
 
 ## Getting started
 This code requires:
@@ -62,9 +62,10 @@ pip install git+https://github.com/openai/CLIP.git
 Download dependencies:
 
 ```bash
-bash prepare/download_smpl_files.sh
 bash prepare/download_glove.sh
 bash prepare/download_t2m_evaluators.sh
+bash prepare/prepare_t5.sh
+bash prepare/download_smpl_models.sh
 ```
 
 
