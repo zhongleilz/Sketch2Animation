@@ -337,10 +337,8 @@ class MLD(BaseModel):
         Spatial guidance
         """
         n_joint = 22
-        # model_log_variance = _extract_into_tensor(self.posterior_log_variance_clipped, t, x.shape)
 
         prev_timestep = timestep - self.scheduler.config.num_train_timesteps // self.scheduler.num_inference_steps
-        # model_variance = self.scheduler._get_variance(timestep,prev_timestep)#torch.exp(model_log_variance)
 
         if timestep > 500:
             n_guide_steps = 50
@@ -366,7 +364,6 @@ class MLD(BaseModel):
         for _ in range(n_guide_steps):
             loss, grad = self.gradients_traj(noise_pred,latents,timestep, hint, mask_hint,lengths, joint_ids)
             # grad = model_variance * grad
-            # print("loss:::",loss.sum())
             
             if timestep >= t_stopgrad:
                 
@@ -380,10 +377,8 @@ class MLD(BaseModel):
         Spatial guidance
         """
         n_joint = 22
-        # model_log_variance = _extract_into_tensor(self.posterior_log_variance_clipped, t, x.shape)
 
         prev_timestep = timestep - self.scheduler.config.num_train_timesteps // self.scheduler.num_inference_steps
-        # model_variance = self.scheduler._get_variance(timestep,prev_timestep)#torch.exp(model_log_variance)
 
         if timestep > 500:
             n_guide_steps = 10
@@ -518,9 +513,6 @@ class MLD(BaseModel):
                 joint_id = torch.nonzero(m.sum(0).squeeze(-1) != 0).squeeze(1)
                 joint_ids.append(joint_id)    
         
-        
-        # scale = float(self.calc_grad_scale(mask_hint)[0][0][0])
-
         with torch.enable_grad():
             noise_pred = noise_pred.clone().detach().contiguous().requires_grad_(True)
 
@@ -545,8 +537,6 @@ class MLD(BaseModel):
         
 
         return noise_pred
-
-
 
     def calc_grad_scale(self, mask_hint):
         # assert mask_hint.shape[1] == 196
@@ -665,88 +655,6 @@ class MLD(BaseModel):
             
         return loss
 
-    # def _diffusion_reverse(self, encoder_hidden_states: torch.Tensor, hint: torch.Tensor = None) -> torch.Tensor:
-
-    #     controlnet_cond = None
-    #     if self.is_controlnet and hint is not None:
-    #         hint_mask = hint.sum(-1) != 0
-    #         controlnet_cond = self.traj_encoder(hint, mask=hint_mask)
-    #         controlnet_cond = controlnet_cond.permute(1, 0, 2)
-
-    #     # init latents
-    #     bsz = encoder_hidden_states.shape[0]
-    #     if self.do_classifier_free_guidance:
-    #         bsz = bsz // 2
-
-    #     latents = torch.randn(
-    #         (bsz, self.latent_dim[0], self.latent_dim[-1]),
-    #         device=encoder_hidden_states.device,
-    #         dtype=torch.float)
-
-    #     # scale the initial noise by the standard deviation required by the scheduler
-    #     latents = latents * self.scheduler.init_noise_sigma
-    #     # set timesteps
-    #     self.scheduler.set_timesteps(
-    #         self.cfg.model.scheduler.num_inference_timesteps)
-    #     timesteps = self.scheduler.timesteps.to(encoder_hidden_states.device)
-    #     # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
-    #     # eta (η) is only used with the DDIMScheduler, and between [0, 1]
-    #     extra_step_kwargs = {}
-    #     if "eta" in set(
-    #             inspect.signature(self.scheduler.step).parameters.keys()):
-    #         extra_step_kwargs["eta"] = self.cfg.model.scheduler.eta
-
-    #     timestep_cond = None
-    #     if self.denoiser.time_cond_proj_dim is not None:
-    #         guidance_scale_tensor = torch.tensor(self.guidance_scale - 1).repeat(latents.shape[0])
-    #         timestep_cond = get_guidance_scale_embedding(
-    #             guidance_scale_tensor, embedding_dim=self.denoiser.time_cond_proj_dim
-    #         ).to(device=latents.device, dtype=latents.dtype)
-
-    #     # reverse
-    #     for i, t in tqdm.tqdm(enumerate(timesteps)):
-    #         # expand the latents if we are doing classifier free guidance
-    #         latent_model_input = (torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents)
-    #         latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
-
-    #         controlnet_residuals = None
-    #         if self.is_controlnet:
-    #             if self.do_classifier_free_guidance:
-    #                 controlnet_prompt_embeds = encoder_hidden_states.chunk(2)[1]
-    #             else:
-    #                 controlnet_prompt_embeds = encoder_hidden_states
-
-    #             controlnet_residuals = self.controlnet(
-    #                 latents,
-    #                 t,
-    #                 timestep_cond=timestep_cond,
-    #                 encoder_hidden_states=controlnet_prompt_embeds,
-    #                 controlnet_cond=controlnet_cond)
-
-    #             if self.do_classifier_free_guidance:
-    #                 controlnet_residuals = [torch.cat([torch.zeros_like(d), d * self.control_scale], dim=1)
-    #                                         for d in controlnet_residuals]
-    #             else:
-    #                 controlnet_residuals = [d * self.control_scale for d in controlnet_residuals]
-
-    #         # predict the noise residual
-    #         noise_pred = self.denoiser(
-    #             sample=latent_model_input,
-    #             timestep=t,
-    #             timestep_cond=timestep_cond,
-    #             encoder_hidden_states=encoder_hidden_states,
-    #             controlnet_residuals=controlnet_residuals)
-
-    #         # perform guidance
-    #         if self.do_classifier_free_guidance:
-    #             noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-    #             noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
-
-    #         latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
-
-    #     # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
-    #     latents = latents.permute(1, 0, 2)
-    #     return latents
     
     def project_to_2d(self, motion_3d, rotation_matrix):
        
