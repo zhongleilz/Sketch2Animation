@@ -7,7 +7,7 @@ from omegaconf import DictConfig
 import torch
 
 from .base import BaseDataModule
-from .humanml.dataset import Text2MotionDatasetV2,Text2MotionDatasetPoseTrejControl,Text2MotionDatasetKeyPoseTrejControl,Text2MotionDatasetV2_Proj2d
+from .humanml.dataset import Text2MotionDatasetV2,Text2MotionDatasetKeyPoseTrejControl,Text2MotionDatasetV2_Proj2d
 from .humanml.scripts.motion_process import recover_from_ric,extract_rotations
 
 

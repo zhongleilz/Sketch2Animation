@@ -287,7 +287,7 @@ class MldDenoiser_PoseAware(nn.Module):
         self.controlnet_down_mid_blocks = nn.ModuleList([
             zero_module(nn.Linear(self.latent_dim, self.latent_dim)) for _ in range(num_block)])
 
-        self.moe_fusion = nn.ModuleList([MOEControlNetFusion(self.latent_dim) for _ in range(num_block)])
+        # self.moe_fusion = nn.ModuleList([MOEControlNetFusion(self.latent_dim) for _ in range(num_block)])
     
     def freeze_mld_parameters(self):
         print("Freeze the parameters of MLD")

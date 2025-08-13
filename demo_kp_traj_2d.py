@@ -19,59 +19,13 @@ from mld.utils.utils import set_seed
 from mld.data.humanml.utils.plot_script import plot_3d_motion, plot_2d_motion
 from mld.utils.temos_utils import remove_padding
 from mld.data.humanml.dataset import adjust_smpl_proportions
+from utils import convert_kps_joint, rotate_pose, project2D
 # Constants
 MASK_JOINT = [6, 9, 16, 17]
 
 ####################################
 # Helper Functions
 ####################################
-
-def convert_kps_joint(motion):
-    """
-    Convert keypoints by setting specific joints to zero and re-computing intermediate joints.
-    """
-    motion[:, MASK_JOINT, :] = 0.0
-    motion[:,16,:] = (motion[:,13,:] + motion[:,18,:]) / 2
-    motion[:,17,:] = (motion[:,14,:] + motion[:,19,:]) / 2
-
-    delta = (motion[:,12,:] - motion[:,3,:]) / 3
-    motion[:,6,:] = motion[:,3,:] + delta
-    motion[:,9,:] = motion[:,3,:] + delta*2
-    return motion
-
-def rotate_pose(motion_3d, angle_x=20, angle_y=45):
-    """
-    Rotate a 3D motion array by given angles around X and Y axes.
-    """
-    rotation_x = np.radians(angle_x)
-    rotation_y = np.radians(angle_y)
-
-    R_y = np.array([
-        [np.cos(rotation_y), 0, np.sin(rotation_y)],
-        [0, 1, 0],
-        [-np.sin(rotation_y), 0, np.cos(rotation_y)]
-    ])
-    
-    R_x = np.array([
-        [1, 0, 0],
-        [0, np.cos(rotation_x), -np.sin(rotation_x)],
-        [0, np.sin(rotation_x), np.cos(rotation_x)]
-    ])
-
-    R = np.dot(R_x, R_y)
-    motion_3d_rotated = np.dot(motion_3d, R.T)
-    return motion_3d_rotated, R
-
-def project2D(data, angle_x=20, angle_y=30):
-    """
-    Project 3D data to 2D by applying rotations and selecting XY coordinates.
-    """
-    data = convert_kps_joint(data)
-    motion_2d = np.zeros(data.shape, dtype=np.float32)
-    data, Rotation = rotate_pose(data, angle_x=angle_x, angle_y=angle_y)
-    motion_2d[:, :, :2] = data[:, :, :2]
-    motion_2d[:, :, 2] = 1
-    return motion_2d, Rotation
 
 def split_video_to_jpegs(video_path, output_folder):
     """
@@ -213,7 +167,7 @@ def main():
     dataset = get_dataset(cfg, phase="test")
     model = MLD(cfg, dataset).to(device)
     model.eval()
-    model.load_state_dict(state_dict, strict=True)
+    model.load_state_dict(state_dict, strict=False)
 
     # Load normalization stats
     mean_pose = torch.tensor(np.load('./datasets/humanml_spatial_norm/Mean_pos.npy')).cuda()
@@ -221,46 +175,62 @@ def main():
     raw_mean = np.load('./datasets/humanml_spatial_norm/Mean_raw.npy')
     raw_std = np.load('./datasets/humanml_spatial_norm/Std_raw.npy')
 
+    def process_motion_data(data_path, length=196):
+        """Process motion data from pkl file and prepare tensors for model input"""
+        with open(data_path, 'rb') as f:
+            data_list = pickle.load(f)
+
+        # Load and process motion
+        joints_3d = data_list["joints_3d_gt"][:35]
+        motion_len = len(joints_3d)
+
+        # Center motion
+        joints_3d[..., 0] -= joints_3d[0:1, 0:1, 0]
+        joints_3d[..., 2] -= joints_3d[0:1, 0:1, 2]
+
+        # Project to 2D and prepare control signals
+        joints_2d, rotation = project2D(joints_3d)
+        
+        # Convert to torch tensors and normalize
+        def normalize(j):
+            return (j - torch.from_numpy(raw_mean).cuda()) / torch.from_numpy(raw_std).cuda()
+
+        # Process for control signals
+        joints_3d_t = torch.from_numpy(joints_3d.reshape(joints_3d.shape[0], -1)).cuda().double()
+        joints_2d_t = torch.from_numpy(joints_2d.reshape(joints_2d.shape[0], -1)).cuda().double()
+        joints_3d_t = normalize(joints_3d_t.unsqueeze(0)).reshape(-1,22,3)
+        joints_2d_t = normalize(joints_2d_t.unsqueeze(0)).reshape(-1,22,3)
+
+        # Process for visualization
+        joints_3d_vis = torch.from_numpy(joints_3d).cuda().double().reshape(joints_3d.shape[0], -1).unsqueeze(0)
+        joints_2d_vis = torch.from_numpy(joints_2d).cuda().double().reshape(joints_2d.shape[0], -1).unsqueeze(0)
+        joints_3d_vis = normalize(joints_3d_vis)
+        joints_2d_vis = normalize(joints_2d_vis)
+
+        return {
+            'joints_3d_t': joints_3d_t,
+            'joints_2d_t': joints_2d_t,
+            'joints_3d_vis': joints_3d_vis,
+            'joints_2d_vis': joints_2d_vis,
+            'motion_len': motion_len,
+            'rotation': rotation
+        }
+
     joint_ids = np.array([10])  # pelvis
-
-    data_path_1 = "./demo/kick.pkl"
-
-    with open(data_path_1, 'rb') as f:
-        data_list = pickle.load(f)
-
-    # Load motion
-    joints_3d = data_list["joints_3d_gt"][:35]#[5:18]
-    motion_len = len(joints_3d)
-
     length = 196
+    
+    # Process motion data
+    data_path = "./demo/kick.pkl"
+    motion_data = process_motion_data(data_path, length)
+    
+    # Prepare control signals
     control_full = np.zeros((1, length, 22, 3), dtype=np.float32)
     control_full_2d = np.zeros((1, length, 22, 3), dtype=np.float32)
-
-    # Center motion
-    joints_3d[..., 0] -= joints_3d[0:1, 0:1, 0]
-    joints_3d[..., 2] -= joints_3d[0:1, 0:1, 2]
-
-    # Project to 2D
-    joints_2d, Rotation = project2D(joints_3d)
-
-    # Prepare torch tensors
-    def normalize(j):
-        return (j - torch.from_numpy(raw_mean).cuda()) / torch.from_numpy(raw_std).cuda()
-
-    joints_3d_t = torch.from_numpy(joints_3d.reshape(joints_3d.shape[0], -1)).cuda().double()
-    joints_2d_t = torch.from_numpy(joints_2d.reshape(joints_2d.shape[0], -1)).cuda().double()
-
-    joints_3d_t = normalize(joints_3d_t.unsqueeze(0)).reshape(-1,22,3)
-    joints_2d_t = normalize(joints_2d_t.unsqueeze(0)).reshape(-1,22,3)
-
-    # Fill in control signals
-
-    for joint_id in joint_ids:
-        control_full[0, 0:motion_len, joint_id, :] = joints_3d_t.cpu().numpy()[0:motion_len, joint_id, :]
     
     for joint_id in joint_ids:
-        control_full_2d[0, 0:motion_len, joint_id, :] = joints_2d_t.cpu().numpy()[0:motion_len, joint_id, :]
-
+        control_full[0, 0:motion_data['motion_len'], joint_id, :] = motion_data['joints_3d_t'].cpu().numpy()[0:motion_data['motion_len'], joint_id, :]
+        control_full_2d[0, 0:motion_data['motion_len'], joint_id, :] = motion_data['joints_2d_t'].cpu().numpy()[0:motion_data['motion_len'], joint_id, :]
+    
     control_full = control_full.reshape((1, length, -1))
     control_full_2d = control_full_2d.reshape((1, length, -1))
 
@@ -268,59 +238,41 @@ def main():
     test_data = load_json("./demo/demo.json")
     text = [test_data["caption"]]
 
-    # Re-load and re-project (for visualization consistency)
-    data_path_1 = "./demo/kick.pkl"
-
-    with open(data_path_1, 'rb') as f:
-        data_list = pickle.load(f)
-
-    joints_3d = data_list["joints_3d_gt"][:35]#[5:18]
-    joints_3d[..., 0] -= joints_3d[0:1, 0:1, 0]
-    joints_3d[..., 2] -= joints_3d[0:1, 0:1, 2]
-
-    joints_2d, Rotation = project2D(joints_3d)
-    joints_3d = torch.from_numpy(joints_3d).cuda().double().reshape(joints_3d.shape[0], -1).unsqueeze(0)
-    joints_2d = torch.from_numpy(joints_2d).cuda().double().reshape(joints_2d.shape[0], -1).unsqueeze(0)
-
-    joints_3d = normalize(joints_3d)
-    joints_2d = normalize(joints_2d)
+    # Use processed data
+    joints_3d = motion_data['joints_3d_vis']
+    joints_2d = motion_data['joints_2d_vis']
+    Rotation = motion_data['rotation']
     
-    
+    # Prepare mask and batch
     motion_idx = [0]
     T = joints_3d.shape[1]
     mask_array = np.zeros(T, dtype=int)
     mask_array[motion_idx] = 1
     mask_array = mask_array[:, np.newaxis]
 
-    pose = joints_3d.float().cuda()
-    pose_2d = joints_2d.float().cuda()
-    hint = torch.from_numpy(control_full).cuda()
-    hint_2d = torch.from_numpy(control_full_2d).cuda()
-    mask = torch.from_numpy(mask_array).cuda().unsqueeze(0)
-    rotation = torch.from_numpy(Rotation).cuda().float()
-
     batch = {
         "length": [length],
         "text": text,
         "motion_idx": [motion_idx],
-        "pose": pose,
-        "pose_2d": pose_2d,
-        "hint": hint,
-        "pose_mask": mask,
-        "hint_2d": hint_2d,
-        "rotation": rotation
+        "pose": joints_3d.float().cuda(),
+        "pose_2d": joints_2d.float().cuda(),
+        "hint": torch.from_numpy(control_full).cuda(),
+        "hint_2d": torch.from_numpy(control_full_2d).cuda(),
+        "pose_mask": torch.from_numpy(mask_array).cuda().unsqueeze(0),
+        "rotation": torch.from_numpy(Rotation).cuda().float()
     }
 
     cfg.replication = 2
 
     # Denormalize for ground truth visualization
-    joints_3d_dn = joints_3d * torch.from_numpy(raw_std).cuda() + torch.from_numpy(raw_mean).cuda()
-
-    joints_3d_gt = joints_3d_dn.reshape(motion_len,22,3)
-
+    motion_len = motion_data['motion_len']
+    joints_3d_dn = motion_data['joints_3d_vis'] * torch.from_numpy(raw_std).cuda() + torch.from_numpy(raw_mean).cuda()
+    
+    joints_3d_gt = joints_3d_dn.reshape(-1, motion_len, 22, 3).squeeze(0)
+    
     joints_3d_dn = joints_3d_dn[:, motion_idx[0], :].reshape(22,3)[np.newaxis, :, :]
     
-    joints_2d_dn = joints_2d * torch.from_numpy(raw_std).cuda() + torch.from_numpy(raw_mean).cuda()
+    joints_2d_dn = motion_data['joints_2d_vis'] * torch.from_numpy(raw_std).cuda() + torch.from_numpy(raw_mean).cuda()
     joints_2d_dn = joints_2d_dn[:, motion_idx[0], :].reshape(22,3)[np.newaxis, :, :]
 
     # Inference and visualization

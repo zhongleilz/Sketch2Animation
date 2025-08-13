@@ -13,7 +13,7 @@ TRAIN:
   SEED_VALUE: 1234
   
 
-  PRETRAINED: ./save/pretrain_22joint_combine_adapter.ckpt
+  PRETRAINED: ./save/checkpoints/pretrain_22joint_combine_adapter.ckpt
   
 
   validation_steps: -1
